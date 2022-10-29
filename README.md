@@ -1,2 +1,2 @@
 # still_func
-A filter to remove the still object
+A filter to remove the stationary object
