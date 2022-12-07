@@ -2,8 +2,15 @@ import queue
 
 
 class still:
+    r""" The still class gives a method to judge the movement of vehicle using the bbox.
+    """
     def __init__(self, delay: int, iou_threshold: float, pending_delay: int=10, drop_last: bool=True) -> None:
         r"""
+        Args:
+            iou_threshold (float): the  threshold of bbox to arouse movement judging mechanism
+            pending_delay (int): the delay frame to compare the bbox of car
+            drop_last (bool): whether to drop the data does not compared 
+
         """
         assert delay>0
         self.delay = delay
