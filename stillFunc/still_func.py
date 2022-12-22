@@ -41,6 +41,23 @@ class still:
         
         if len(self.pending_info):
              self._update_pending_list(idx, coordinate)
+    
+    def _iou(self, list_1, list_2) -> float:
+        r""" Intersetion over Union
+        """
+        [x_1_1, y_1_1, x_1_2, y_1_2] = list_1
+        [x_2_1, y_2_1, x_2_2, y_2_2] = list_2
+        bb_x1 = max(x_1_1, x_2_1)
+        bb_y1 = max(y_1_1, y_2_1)
+        bb_x2 = min(x_1_2, x_2_2)
+        bb_y2 = min(y_1_2, y_2_2)
+        if (bb_x1>bb_x2) or (bb_y1>bb_y2):
+            return 0
+
+        Inter = (bb_x2-bb_x1)*(bb_y2-bb_y1)
+        Union = (x_1_2-x_1_1)*(y_1_2-y_1_1)+(x_2_2-x_2_1)*(y_2_2-y_2_1)-Inter
+
+        return Inter/Union
 
     def _judge_iou(self, judge_index: list, ref_index: list, judge_coor: list, ref_coor:list):
         r"""
@@ -75,18 +92,6 @@ class still:
                     break
         return (index_1, index_2)
 
-    def _update_delay_queue(self, length: int, idx: list, coordinate: list):
-        r""" update the delay queue and when delay_queue is full put previous data on self.judging_item
-        """
-        self.judging_item = queue.Queue()
-        if self.delay_queue.full():
-            item_num = self.delay_queue.get()
-            for _ in range(item_num):
-                temp = self.info_queue.get()
-                self.judging_item.put(temp)
-            self._update_data_queue(idx, coordinate)
-        self.delay_queue.put(length)
-
     def _update_data_queue(self, idx, coordinate):
         r""" put qualified datas to the pending containers and delete others
         """
@@ -114,6 +119,18 @@ class still:
         self.pending_list = self.pending_list[1:]   # queue-type operation
         self.pending_list.append(count)
 
+    def _update_delay_queue(self, length: int, idx: list, coordinate: list):
+        r""" update the delay queue and when delay_queue is full put previous data on self.judging_item
+        """
+        self.judging_item = queue.Queue()
+        if self.delay_queue.full():
+            item_num = self.delay_queue.get()
+            for _ in range(item_num):
+                temp = self.info_queue.get()
+                self.judging_item.put(temp)
+            self._update_data_queue(idx, coordinate)
+        self.delay_queue.put(length)
+
     def _update_pending_list(self, idx: list, coordinate: list):
         r"""
         """
@@ -139,20 +156,4 @@ class still:
             self.pending_info = self.pending_info[self.pending_list[0]:]
             self.pending_data = self.pending_data[1:]
 
-    def _iou(self, list_1, list_2) -> float:
-        r""" Intersetion over Union
-        """
-        [x_1_1, y_1_1, x_1_2, y_1_2] = list_1
-        [x_2_1, y_2_1, x_2_2, y_2_2] = list_2
-        bb_x1 = max(x_1_1, x_2_1)
-        bb_y1 = max(y_1_1, y_2_1)
-        bb_x2 = min(x_1_2, x_2_2)
-        bb_y2 = min(y_1_2, y_2_2)
-        if (bb_x1>bb_x2) or (bb_y1>bb_y2):
-            return 0
-
-        Inter = (bb_x2-bb_x1)*(bb_y2-bb_y1)
-        Union = (x_1_2-x_1_1)*(y_1_2-y_1_1)+(x_2_2-x_2_1)*(y_2_2-y_2_1)-Inter
-
-        return Inter/Union
 
